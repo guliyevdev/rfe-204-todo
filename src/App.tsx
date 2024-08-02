@@ -1,9 +1,20 @@
 import './App.css'
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer, useState, ChangeEvent, MouseEvent } from "react";
 
-const initialState = { todos: [], inputValue: '' }
+interface TodoState {
+    todos: string[];
+    inputValue: string;
+}
 
-const reducer = (state, action) => {
+type Action =
+    | { type: 'ADD_TODO'; payload: string }
+    | { type: 'SET_TODOS'; payload: string[] }
+    | { type: 'CHANGE_INPUT'; payload: string }
+    | { type: 'DELETE_TODO'; payload: number };
+
+const initialState: TodoState = { todos: [], inputValue: '' }
+
+const reducer = (state: TodoState, action: Action): TodoState => {
     switch (action.type) {
         case 'ADD_TODO':
             return { ...state, todos: [...state.todos, action.payload] }
@@ -13,7 +24,7 @@ const reducer = (state, action) => {
         case 'CHANGE_INPUT':
             return { ...state, inputValue: action.payload }
         case 'DELETE_TODO':
-            return { ...state, todos: state.todos.filter((todo, index) => index !== action.payload) }
+            return { ...state, todos: state.todos.filter((_, index) => index !== action.payload) }
         default:
             return state
     }
@@ -29,33 +40,43 @@ function App() {
     }, [])
 
     const getTodos = () => {
-        const todos = JSON.parse(localStorage.getItem('todos')) || []
-        dispatch({ type: 'SET_TODOS', payload: todos})
+        const todos = JSON.parse(localStorage.getItem('todos') || '[]') as string[]
+        dispatch({ type: 'SET_TODOS', payload: todos })
         console.log(todos)
+    }
+
+    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+        dispatch({ type: 'CHANGE_INPUT', payload: event.target.value })
+        setInputValue(event.target.value)
+    }
+
+    const handleAdd = (event: MouseEvent<HTMLButtonElement>) => {
+        if (inputValue === '') {
+            window.alert('Please enter a todo')
+        } else {
+            dispatch({ type: 'ADD_TODO', payload: inputValue })
+            setInputValue('')
+            localStorage.setItem('todos', JSON.stringify([...state.todos, inputValue]))
+        }
+    }
+
+    const handleDelete = (index: number) => {
+        dispatch({ type: 'DELETE_TODO', payload: index })
     }
 
     return (
         <>
-            <input type="text" value={inputValue} onChange={(event) => {
-                dispatch({ type: 'CHANGE_INPUT', payload: event.target.value })
-                setInputValue(event.target.value)
-            }} />
-            <button onClick={() => {
-                if (inputValue === '') {
-                    window.alert('Please enter a todo')
-                }
-                else {
-                    dispatch({ type: 'ADD_TODO', payload: inputValue })
-                    setInputValue('')
-                    localStorage.setItem('todos', JSON.stringify([...state.todos, inputValue]))
-                }
-            }}>Add</button>
+            <input type="text" value={inputValue} onChange={handleChange} />
+            <button onClick={handleAdd}>Add</button>
             <hr />
             <ul>
                 {state.todos.map((todo, index) => {
-                    return <li key={index}><span>{todo}</span> <button onClick={() => {
-                        dispatch({ type: 'DELETE_TODO', payload: index })
-                    }}>Delete</button></li>
+                    return (
+                        <li key={index}>
+                            <span>{todo}</span>
+                            <button onClick={() => handleDelete(index)}>Delete</button>
+                        </li>
+                    )
                 })}
             </ul>
         </>
