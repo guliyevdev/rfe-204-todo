@@ -50,7 +50,7 @@ function App() {
         setInputValue(event.target.value)
     }
 
-    const handleAdd = (event: MouseEvent<HTMLButtonElement>) => {
+    const handleAdd = () => {
         if (inputValue === '') {
             window.alert('Please enter a todo')
         } else {
