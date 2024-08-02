@@ -1,5 +1,5 @@
 import './App.css'
-import { useEffect, useReducer, useState, ChangeEvent, MouseEvent } from "react";
+import { useEffect, useReducer, useState, ChangeEvent } from "react";
 
 interface TodoState {
     todos: string[];
